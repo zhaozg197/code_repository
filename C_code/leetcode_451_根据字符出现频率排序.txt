@@ -1,0 +1,157 @@
+根据字符出现频率排序
+给定一个字符串，请将字符串里的字符按照出现的频率降序排列。
+示例 1:
+输入:
+"tree"
+输出:
+"eert"
+解释:
+'e'出现两次，'r'和't'都只出现一次。
+因此'e'必须出现在'r'和't'之前。
+此外，"eetr"也是一个有效的答案。
+
+示例 2:
+输入:
+"cccaaa"
+输出:
+"cccaaa"
+解释:
+'c'和'a'都出现三次。
+此外，"aaaccc"也是有效的答案。
+注意"cacaca"是不正确的，因为相同的字母必须放在一起。
+
+示例 3:
+输入:
+"Aabb"
+输出:
+"bbAa"
+解释:
+此外，"bbaA"也是一个有效的答案，但"Aabb"是不正确的。
+注意'A'和'a'被认为是两种不同的字符。
+
+解题思路：
+1、统计字符个数，即字符出现的频率。遍历即可，考虑到字符数量可能会很大，多次遍历会很耗时，采用空间换时间的方式遍历。
+2、排序，对于统计字符个数后的序列进行排序（根据次数进行排序），采用通用的排序算法即可，如快速排序。
+
+输出的代码如下：
+typedef struct statInfo
+{
+	char ch;
+	int cnt;
+}statInfo;
+
+void quickSortStatChInfo(statInfo *statInfoTmp,int begin, int end)
+{
+	int temp = 0;
+	char tempCh = 0;
+	int left = begin;
+	int right = end;
+	int pos = statInfoTmp[begin].cnt;
+    
+	while(begin < end)
+	{
+		while(begin < end && statInfoTmp[end].cnt <= pos)
+		{
+			end--;
+		}
+		temp = statInfoTmp[begin].cnt;
+		tempCh = statInfoTmp[begin].ch;
+		statInfoTmp[begin].cnt = statInfoTmp[end].cnt;
+		statInfoTmp[begin].ch =statInfoTmp[end].ch;
+		statInfoTmp[end].cnt = temp;
+		statInfoTmp[end].ch = tempCh;
+		while(begin < end && statInfoTmp[begin].cnt >= pos)
+		{
+			begin++;
+		}
+		temp = statInfoTmp[begin].cnt;
+		tempCh = statInfoTmp[begin].ch;
+		statInfoTmp[begin].cnt = statInfoTmp[end].cnt;
+		statInfoTmp[begin].ch =statInfoTmp[end].ch;
+		statInfoTmp[end].cnt = temp;
+		statInfoTmp[end].ch = tempCh;
+	}
+
+	if(begin > left)
+	{
+		quickSortStatChInfo(statInfoTmp,left,begin - 1);
+	}
+	if(end < right)
+	{
+		quickSortStatChInfo(statInfoTmp,end+1,right);
+	}
+	return;
+}
+char * frequencySort(char * s)
+{
+	char *dstStr = NULL;
+	int len = strlen(s);
+	int idx = 0; 
+	statInfo *statNumInfo = NULL;
+	statInfo *statNumInfoTemp = NULL;
+	int min = s[0];
+	int max = s[0];
+
+	dstStr = (char *)malloc(len+1);
+	 //判空略
+	strncpy(dstStr,s,len);
+
+	for(int i = 1; i < len;i++)
+	{
+		if(s[i] > max)
+		{
+			max = s[i];
+		}
+		if(s[i] < min)
+		{
+			min = s[i];
+		}
+
+	}
+    
+	statNumInfo = (statInfo *)malloc(sizeof(statInfo)*(max - min + 1));
+	for(int j = 0; j < max - min + 1;j++)
+	{
+		memset(&statNumInfo[j],0,sizeof(statInfo));
+	}
+	for(int i = 0; i < len; i++)
+	{
+		statNumInfo[s[i] - min].cnt++;
+		statNumInfo[s[i] - min].ch = s[i];
+	}
+    
+	statNumInfoTemp = (statInfo *)malloc(sizeof(statInfo)*(max - min + 1));
+	for(int j = 0; j < max - min + 1;j++)
+	{
+		memset(&statNumInfoTemp[j],0,sizeof(statInfo));
+	}
+
+	for(int i = 0; i < max - min + 1;i++)
+	{
+		if(0 == statNumInfo[i].ch)
+		{
+			continue;
+		}
+		statNumInfoTemp[idx].cnt = statNumInfo[i].cnt;
+		statNumInfoTemp[idx].ch = statNumInfo[i].ch;
+		idx++;
+	}
+    
+	quickSortStatChInfo(statNumInfoTemp, 0, idx-1);
+    
+	int chIdx = 0;
+    
+	for(int i = 0; i < idx;i++)
+	{
+		int temp = statNumInfoTemp[i].cnt;
+		for(int j = 0; j < temp;j++)
+		{
+			dstStr[chIdx++] = statNumInfoTemp[i].ch;
+		}
+		
+	}
+    free(statNumInfo);
+    free(statNumInfoTemp);
+	dstStr[chIdx] = '\0';
+	return dstStr;
+}
